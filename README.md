@@ -1,7 +1,7 @@
 My solution for [AoC 2021](ventofcode.com/2021/) written in separate
 language for each problem.
 
-Inspired by [Tsoding](https://github.com/tsoding)'s approach in 2020's AoC.
+Inspired by [Tsoding](https://github.com/tsoding)'s approach in 2020's [AoC](https://github.com/tsoding/aoc-2020).
 
 Each would contain
 1. source code in single file for each program,
