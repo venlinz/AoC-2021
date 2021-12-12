@@ -2,8 +2,12 @@ CC=gcc
 CFLAGS=-Werror -Wextra -Wall -Wconversion -pedantic -pedantic-errors
 CXX=g++
 
-part01: part01.c
+part1: part1.c
 	$(CC) $(CFLAGS) $^ -o $@
 
-part02: part02.cpp
+part2: part2.cpp
 	$(CXX) $(CFLAGS) $^ -o $@
+
+.PHONY: clean
+clean:
+	rm -f part1 part2

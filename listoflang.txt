@@ -1,8 +1,0 @@
-day 01:
-    part 1: C
-    part 2: C++
-day 02:
-    part 1: rust
-    part 2: go
-day 03:
-    part 1: java

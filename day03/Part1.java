@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.*;
 
-public class Part01 { 
+public class Part1 { 
     public static void main(String args[]) {
         final int BIT_LEN;
         final int INITIAL_MASK;
