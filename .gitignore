@@ -4,3 +4,5 @@ old/*
 build.sh
 tags
 test*
+problem.txt
+a.out
