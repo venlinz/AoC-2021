@@ -25,10 +25,11 @@ size_t roa_size = 0;
 typedef int matrix2d[ROW_LEN][COL_LEN];
 typedef struct {
     matrix2d num_board;
+    bool is_won;
 } game_board;
 
 size_t boards_count = 0;
-game_board game_boards[MAX_BOARDS_COUNT];
+game_board game_boards[MAX_BOARDS_COUNT] = {0};
 
 typedef struct {
     int board_idx;
@@ -39,6 +40,7 @@ void fill_board();
 void get_roa();
 void get_data();
 winning_entry check_won_board();
+winning_entry check_last_won_board();
 
 void print_i32array(int *arr, size_t len);
 void print_2d_i32array(int *arr_2d, size_t d_m, size_t d_n);
@@ -47,10 +49,20 @@ void print_2d_i32array(int *arr_2d, size_t d_m, size_t d_n);
 void ins_sort_asc(int *a, int len);
 bool contains(int *a, int len, int elem); // using binary search
 
+int main1(void)
+{
+    get_data();
+    for (size_t board = 0; board < boards_count; ++board)
+    {
+        printf("bool iswon: %d\n", game_boards[board].is_won);
+    }
+    return 0;
+}
 int main(void)
 {
     get_data();
     winning_entry ent = check_won_board();
+    printf("Part 1:\n");
     if (ent.board_idx == -1)
     {
         printf("winner not found\n");
@@ -74,7 +86,37 @@ int main(void)
         printf("sum_of_unmarked: %lu\n", sum_of_unmarked);
         printf("answer: %lu\n", sum_of_unmarked * ent.winning_draw);
     }
-    printf("Here come the table\n");
+
+    printf("Part 2:\n");
+    get_data();
+    print_i32array(random_order_array, roa_size);
+    ent = check_last_won_board();
+    int *board = (int *)game_boards[ent.board_idx].num_board;
+    print_2d_i32array(board, ROW_LEN, COL_LEN);
+    if (ent.board_idx == -1)
+    {
+        printf("winner not found\n");
+    }
+    else
+    {
+        printf("found\n");
+        printf("last won board_idx: %d\n",    ent.board_idx);
+        int *board = (int *)game_boards[ent.board_idx].num_board;
+        print_2d_i32array(board, ROW_LEN, COL_LEN);
+        printf("winning_draw: %d\n", ent.winning_draw);
+        size_t sum_of_unmarked = 0;
+        for (size_t r = 0; r < ROW_LEN; r++)
+        {
+            for (size_t c = 0; c < COL_LEN; c++)
+            {
+                if (game_boards[ent.board_idx].num_board[r][c] != -1)
+                    sum_of_unmarked += game_boards[ent.board_idx].num_board[r][c];
+            }
+        }
+        printf("sum_of_unmarked: %lu\n", sum_of_unmarked);
+        printf("answer: %lu\n", sum_of_unmarked * ent.winning_draw);
+    }
+
     return 0;
 }
 
@@ -155,7 +197,6 @@ void fill_board(FILE *fp)
                 {
                     errno = 0;
                     num = strtol(tok , NULL, 10);
-                    /* printf("num: %ld\n", num); */
                     if (errno != 0)
                     {
                         perror("strtol");
@@ -245,6 +286,8 @@ void get_roa(FILE *fp)
 void get_data()
 {
     FILE *fp = fopen(FILENAME, "r");
+    roa_size = 0;
+    boards_count = 0;
     errno = 0;
     if (fp == NULL)
     {
@@ -252,7 +295,6 @@ void get_data()
         exit(EXIT_FAILURE);
     }
     get_roa(fp);
-    print_i32array(random_order_array, roa_size);
     fill_board(fp);
     fclose(fp);
 }
@@ -320,7 +362,7 @@ void ins_sort_asc(int *a, int len)
 bool contains(int *a, int len, int elem) // using binary search
 {
     size_t iters = 0;
-    
+
     if (elem > a[len - 1])
         return false;
     else if (elem < a[0])
@@ -349,4 +391,50 @@ bool contains(int *a, int len, int elem) // using binary search
     }
     printf("bin_search: iters = %lu\n", iters);
     return false;
+}
+
+
+winning_entry check_last_won_board()
+{
+    winning_entry ent = {0};
+    for (size_t r_idx = 0; r_idx < roa_size; r_idx++)
+    {
+        int rand_num = random_order_array[r_idx];
+        for (size_t board = 0; board < boards_count; board++)
+        {
+            for (size_t r = 0; r < ROW_LEN; r++)
+            {
+                for (size_t c = 0; c < COL_LEN; c++)
+                {
+                    if (rand_num == game_boards[board].num_board[r][c] &&
+                            !game_boards[board].is_won)
+                    {
+                        game_boards[board].num_board[r][c] = -1;
+                        int cur_col_res = -1;
+                        int cur_row_res = -1;
+                        for (size_t col_row_idx = 0;
+                                col_row_idx < ROW_LEN;
+                                col_row_idx++)
+                        {
+                            if (game_boards[board].num_board[col_row_idx][c] != -1)
+                            {
+                                cur_col_res = 1;
+                            }
+                            if (game_boards[board].num_board[r][col_row_idx] != -1)
+                            {
+                                cur_row_res = 1;
+                            }
+                        }
+                        if (cur_col_res == -1 || cur_row_res == -1)
+                        {
+                            ent = (winning_entry) { .board_idx = board,
+                                .winning_draw = rand_num };
+                            game_boards[board].is_won = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return ent;
 }

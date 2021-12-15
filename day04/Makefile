@@ -1,11 +1,8 @@
 CFLAGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -std=c17 -g
-all : part1
+all : sol
 
-part1: part1.c
-	gcc -o part1 part1.c $(CFLAGS)
-
-part2: part2.c
-	gcc -o part2 part2.c $(CFLAGS)
+sol: solution.c
+	gcc -o $@ $^ $(CFLAGS)
 
 .PHONY: clean
 clean:
