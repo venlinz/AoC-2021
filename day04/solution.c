@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-/* #define SAMPLE */
+#define SAMPLE
 #ifndef SAMPLE
 #define FILENAME "input.txt"
 #else
@@ -15,8 +15,6 @@
 
 
 #define MAX_LEN 1024
-int random_order_array[MAX_LEN];
-size_t roa_size = 0;
 
 #define ROW_LEN 5
 #define COL_LEN ROW_LEN
@@ -28,19 +26,22 @@ typedef struct {
     bool is_won;
 } game_board;
 
-size_t boards_count = 0;
-game_board game_boards[MAX_BOARDS_COUNT] = {0};
-
 typedef struct {
     int board_idx;
     int winning_draw;
 } winning_entry;
 
-void fill_board();
-void get_roa();
+size_t fill_board(FILE *fp, game_board *game_boards);
+size_t get_roa(FILE *fp, int *random_order_array);
 void get_data();
-winning_entry check_won_board();
-winning_entry check_last_won_board();
+winning_entry check_won_board(game_board *game_boards,
+        size_t boards_count,
+        int *random_order_array,
+        size_t roa_size);
+winning_entry check_last_won_board(game_board *game_boards,
+        size_t boards_count,
+        int *random_order_array,
+        size_t roa_size);
 
 void print_i32array(int *arr, size_t len);
 void print_2d_i32array(int *arr_2d, size_t d_m, size_t d_n);
@@ -49,19 +50,17 @@ void print_2d_i32array(int *arr_2d, size_t d_m, size_t d_n);
 void ins_sort_asc(int *a, int len);
 bool contains(int *a, int len, int elem); // using binary search
 
-int main1(void)
-{
-    get_data();
-    for (size_t board = 0; board < boards_count; ++board)
-    {
-        printf("bool iswon: %d\n", game_boards[board].is_won);
-    }
-    return 0;
-}
 int main(void)
 {
-    get_data();
-    winning_entry ent = check_won_board();
+    int random_order_array[MAX_LEN];
+    game_board game_boards[MAX_BOARDS_COUNT] = {0};
+    FILE *fp = fopen(FILENAME, "r");
+    // function call order matters for getting input.
+    size_t roa_size = get_roa(fp, random_order_array);
+    size_t boards_count = fill_board(fp, game_boards);
+
+    winning_entry ent = check_won_board(game_boards, boards_count, 
+                            random_order_array, roa_size);
     printf("Part 1:\n");
     if (ent.board_idx == -1)
     {
@@ -87,12 +86,14 @@ int main(void)
         printf("answer: %lu\n", sum_of_unmarked * ent.winning_draw);
     }
 
-    printf("Part 2:\n");
-    get_data();
-    print_i32array(random_order_array, roa_size);
-    ent = check_last_won_board();
-    int *board = (int *)game_boards[ent.board_idx].num_board;
-    print_2d_i32array(board, ROW_LEN, COL_LEN);
+    printf("\nPart 2:\n");
+    rewind(fp);
+    roa_size = get_roa(fp, random_order_array);
+    boards_count = fill_board(fp, game_boards);
+    fclose(fp);
+    ent = check_last_won_board(game_boards, boards_count, 
+                            random_order_array, roa_size);
+
     if (ent.board_idx == -1)
     {
         printf("winner not found\n");
@@ -121,7 +122,11 @@ int main(void)
 }
 
 
-winning_entry check_won_board()
+
+winning_entry check_won_board(game_board *game_boards,
+        size_t boards_count,
+        int *random_order_array,
+        size_t roa_size)
 {
     winning_entry ent = {0};
     for (size_t r_idx = 0; r_idx < roa_size; r_idx++)
@@ -174,9 +179,9 @@ winning_entry check_won_board()
 }
 
 
-void fill_board(FILE *fp)
+size_t fill_board(FILE *fp, game_board *game_boards)
 {
-    boards_count = 0;
+    size_t boards_count = 0;
     memset(game_boards, 0, MAX_BOARDS_COUNT * sizeof(game_board));
     size_t limit = 100;
     char *linep = malloc(limit);
@@ -238,10 +243,12 @@ void fill_board(FILE *fp)
         }
     }
     free(begin);
+    return boards_count;
 }
 
-void get_roa(FILE *fp)
+size_t get_roa(FILE *fp, int *random_order_array)
 {
+    size_t roa_size = 0;
     char *linep = malloc(MAX_LEN);
     if (linep == NULL)
     {
@@ -280,24 +287,24 @@ void get_roa(FILE *fp)
         exit(EXIT_FAILURE);
     }
     free(linep);
+    return roa_size;
 }
 
 
-void get_data()
-{
-    FILE *fp = fopen(FILENAME, "r");
-    roa_size = 0;
-    boards_count = 0;
-    errno = 0;
-    if (fp == NULL)
-    {
-        perror("fopen: ");
-        exit(EXIT_FAILURE);
-    }
-    get_roa(fp);
-    fill_board(fp);
-    fclose(fp);
-}
+/* void get_data() */
+/* { */
+/*     FILE *fp = fopen(FILENAME, "r"); */
+/*     boards_count = 0; */
+/*     errno = 0; */
+/*     if (fp == NULL) */
+/*     { */
+/*         perror("fopen: "); */
+/*         exit(EXIT_FAILURE); */
+/*     } */
+/*     get_roa(fp); */
+/*     fill_board(fp); */
+/*     fclose(fp); */
+/* } */
 
 
 void print_i32array(int *arr, size_t len)
@@ -394,7 +401,10 @@ bool contains(int *a, int len, int elem) // using binary search
 }
 
 
-winning_entry check_last_won_board()
+winning_entry check_last_won_board(game_board *game_boards,
+        size_t boards_count,
+        int *random_order_array,
+        size_t roa_size)
 {
     winning_entry ent = {0};
     for (size_t r_idx = 0; r_idx < roa_size; r_idx++)
