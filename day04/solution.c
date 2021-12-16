@@ -33,7 +33,6 @@ typedef struct {
 
 size_t fill_board(FILE *fp, game_board *game_boards);
 size_t get_roa(FILE *fp, int *random_order_array);
-void get_data();
 winning_entry check_won_board(game_board *game_boards,
         size_t boards_count,
         int *random_order_array,
@@ -289,22 +288,6 @@ size_t get_roa(FILE *fp, int *random_order_array)
     free(linep);
     return roa_size;
 }
-
-
-/* void get_data() */
-/* { */
-/*     FILE *fp = fopen(FILENAME, "r"); */
-/*     boards_count = 0; */
-/*     errno = 0; */
-/*     if (fp == NULL) */
-/*     { */
-/*         perror("fopen: "); */
-/*         exit(EXIT_FAILURE); */
-/*     } */
-/*     get_roa(fp); */
-/*     fill_board(fp); */
-/*     fclose(fp); */
-/* } */
 
 
 void print_i32array(int *arr, size_t len)
