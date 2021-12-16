@@ -305,16 +305,16 @@ void print_i32array(int *arr, size_t len)
 }
 
 
-void print_2d_i32array(int *arr_2d, size_t d_m, size_t d_n)
+void print_2d_i32array(int *arr_2d, size_t row, size_t col)
 {
-    if (d_m <= 0 || d_n <= 0)
+    if (row <= 0 || col <= 0)
     {
         fprintf(stderr, "Invalid argument(s) dimensions\n");
         exit(EXIT_FAILURE);
     }
-    for (size_t i = 0; i < d_m; ++i)
+    for (size_t i = 0; i < row; ++i)
     {
-        print_i32array((arr_2d + (i * d_m)), d_n);
+        print_i32array((arr_2d + (i * row)), col);
     }
 }
 
