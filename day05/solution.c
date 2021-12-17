@@ -6,24 +6,30 @@
 #include <math.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define SAMPLE
 #ifndef SAMPLE
 #define FILENAME "input.txt"
+#define RANGE 1000
 #else
 #define FILENAME "sample.txt"
+#define RANGE 10
 #endif
-
-#define RANGE 1000
 
 
 typedef struct {
     int x, y;
 } point_t;
 
-void print_point_t(point_t pt);
-void set_lines(int **sea_floor, point_t s, point_t e);
+typedef struct {
+    int8_t mat[RANGE][RANGE];
+} matrix;
 
+void print_point_t(point_t pt);
+void set_lines(matrix *sea_floor,
+        point_t s,
+        point_t e);
 
 int main(void)
 {
@@ -40,8 +46,9 @@ int main(void)
         exit(EXIT_FAILURE);
     }
     size_t limit = 25;
-    int sea_floor[RANGE][RANGE] = {0};
-    (void) sea_floor;
+    
+    matrix *sea_floor = malloc(sizeof(matrix));
+    memset(sea_floor, 0, sizeof(matrix));
     while ((getline(&line, &limit, fp) > 0))
     {
         char *delim = ",-> ";
@@ -61,34 +68,72 @@ int main(void)
             cur_cordinates_arr[cord_idx] = (int) num;
         }
         point_t line_start = { .x = cur_cordinates_arr[0], .y = cur_cordinates_arr[1] };
-        (void) line_start;
-        /* print_point_t(line_start); */
         point_t line_end = { .x = cur_cordinates_arr[2], .y = cur_cordinates_arr[3] };
-        /* print_point_t(line_end); */
-        (void) line_end;
-        set_lines((int **)sea_floor, line_start, line_end);
+        set_lines(sea_floor, line_start, line_end);
     }
+    size_t danger_zones = 0;
+    for (int i = 0; i < RANGE; ++i)
+    {
+        for (int j = 0; j < RANGE; ++j)
+        {
+            if (sea_floor->mat[i][j] > 1)
+                danger_zones++;
+#ifdef SAMPLE
+            printf("%d", sea_floor->mat[i][j]);
+#endif
+        }
+        printf("\n");
+    }
+    printf("danger_zones: %lu\n", danger_zones);
     free(line);
-    (void) sea_floor;
+    fclose(fp);
     return 0;
 }
 
-void set_lines(int **sea_floor, point_t s, point_t e)
+void set_lines(matrix *sea_floor,
+        point_t s,
+        point_t e)
 {
-    // vertical line
     int line_len = 0;
+    // vertical line
     if (s.x == e.x)
     {
-        line_len = abs(s.y - e.y);
+        line_len = (e.y - s.y);
+        if (line_len > 0)
+        {
+            for (int i = 0; i <= line_len; ++i)
+            {
+                sea_floor->mat[s.y + i][s.x]++;
+            }
+        }
+        else
+        {
+            for (int i = line_len; i <= 0; ++i)
+            {
+                sea_floor->mat[s.y + i][s.x]++;
+            }
+        }
     }
 
     // Horizontal line.
-    (void) sea_floor;
     if (s.y == e.y)
     {
-        line_len = abs(s.x - e.x);
+        line_len = (e.x - s.x);
+        if (line_len > 0)
+        {
+            for (int i = 0; i <= line_len; ++i)
+            {
+                sea_floor->mat[s.y][s.x + i]++;
+            }
+        }
+        else
+        {
+            for (int i = line_len; i <= 0; ++i)
+            {
+                sea_floor->mat[s.y][s.x + i]++;
+            }
+        }
     }
-    printf("line_len: %d\n", line_len);
 }
 
 void print_point_t(point_t pt)
