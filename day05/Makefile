@@ -1,5 +1,5 @@
 CFLAGS =-Wall -Wextra -Werror -pedantic -pedantic-errors -std=c17 -g
-LIBS=-lm
+LIBS=
 all : out
 
 out: solution.c

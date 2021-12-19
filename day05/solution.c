@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -11,7 +10,7 @@
 #define SAMPLE
 #ifndef SAMPLE
 #define FILENAME "input.txt"
-#define RANGE 1000
+#define RANGE 500
 #else
 #define FILENAME "sample.txt"
 #define RANGE 10
@@ -30,6 +29,7 @@ void print_point_t(point_t pt);
 void set_lines(matrix *sea_floor,
         point_t s,
         point_t e);
+
 
 int main(void)
 {
@@ -90,6 +90,7 @@ int main(void)
     return 0;
 }
 
+
 void set_lines(matrix *sea_floor,
         point_t s,
         point_t e)
@@ -135,6 +136,7 @@ void set_lines(matrix *sea_floor,
         }
     }
 }
+
 
 void print_point_t(point_t pt)
 {
