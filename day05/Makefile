@@ -1,7 +1,7 @@
 # `pkg-config --cflags libbsd-overlay`
 # `pkg-config --libs libbsd-overlay` my first pkg-config commands
 CFLAGS =-Wall -Wextra -Werror -pedantic -pedantic-errors -std=c17 -g
-LIBS=
+LIBS=-lm
 all : out
 
 out: solution.c

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
 
 /* #define SAMPLE */
 #ifndef SAMPLE
@@ -102,19 +103,16 @@ void set_lines(matrix *sea_floor,
     if (s.x == e.x)
     {
         line_len = (e.y - s.y);
-        if (line_len > 0)
+        int y_diff = 1;
+        if (line_len < 0)
         {
-            for (int i = 0; i <= line_len; ++i)
-            {
-                sea_floor->mat[s.y + i][s.x]++;
-            }
+            y_diff = -1;
         }
-        else
+        line_len = abs(line_len);
+        int cur_y = s.y;
+        for (int i = 0; i <= line_len; ++i, cur_y += y_diff)
         {
-            for (int i = line_len; i <= 0; ++i)
-            {
-                sea_floor->mat[s.y + i][s.x]++;
-            }
+            sea_floor->mat[cur_y][s.x]++;
         }
     }
 
@@ -122,19 +120,16 @@ void set_lines(matrix *sea_floor,
     if (s.y == e.y)
     {
         line_len = (e.x - s.x);
-        if (line_len > 0)
+        int x_diff = 1;
+        if (line_len < 0)
         {
-            for (int i = 0; i <= line_len; ++i)
-            {
-                sea_floor->mat[s.y][s.x + i]++;
-            }
+            x_diff = -1;
         }
-        else
+        line_len = abs(line_len);
+        int cur_x = s.x;
+        for (int i = 0; i <= line_len; ++i, cur_x += x_diff)
         {
-            for (int i = line_len; i <= 0; ++i)
-            {
-                sea_floor->mat[s.y][s.x + i]++;
-            }
+            sea_floor->mat[s.y][cur_x]++;
         }
     }
 }
