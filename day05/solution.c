@@ -7,10 +7,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define SAMPLE
+/* #define SAMPLE */
 #ifndef SAMPLE
 #define FILENAME "input.txt"
-#define RANGE 500
+#define RANGE 1000 //not for number of line but for max cord-value
 #else
 #define FILENAME "sample.txt"
 #define RANGE 10
@@ -82,7 +82,9 @@ int main(void)
             printf("%d", sea_floor->mat[i][j]);
 #endif
         }
+#ifdef SAMPLE
         printf("\n");
+#endif
     }
     printf("danger_zones: %lu\n", danger_zones);
     free(line);
