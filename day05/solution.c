@@ -99,37 +99,69 @@ void set_lines(matrix *sea_floor,
         point_t e)
 {
     int line_len = 0;
-    // vertical line
-    if (s.x == e.x)
+    if (s.x == e.x)  // vertical line
     {
         line_len = (e.y - s.y);
         int y_diff = 1;
         if (line_len < 0)
         {
             y_diff = -1;
+            line_len = -line_len;
         }
-        line_len = abs(line_len);
         int cur_y = s.y;
         for (int i = 0; i <= line_len; ++i, cur_y += y_diff)
         {
+            /* sea_floor->mat[row][col]++; */
             sea_floor->mat[cur_y][s.x]++;
         }
     }
-
-    // Horizontal line.
-    if (s.y == e.y)
+    else if (s.y == e.y) // Horizontal line.
     {
         line_len = (e.x - s.x);
         int x_diff = 1;
         if (line_len < 0)
         {
             x_diff = -1;
+            line_len = -line_len;
         }
-        line_len = abs(line_len);
         int cur_x = s.x;
         for (int i = 0; i <= line_len; ++i, cur_x += x_diff)
         {
+            /* sea_floor->mat[row][col]++; */
             sea_floor->mat[s.y][cur_x]++;
+        }
+    }
+    else // diagonol
+    {
+        int line_len_x = (e.x - s.x);
+        int line_len_y = (e.y - s.y);
+        if (abs(line_len_x) != abs(line_len_y))
+        {
+            return;
+        }
+
+        int x_diff = 1;
+        int y_diff = 1;
+        if (line_len_x < 0)
+        {
+            x_diff = -1;
+        }
+        if (line_len_y < 0)
+        {
+            y_diff = -1;
+        }
+        line_len = abs(line_len_x);
+
+        int cur_x = s.x;
+        int cur_y = s.y;
+        for (int i = 0;
+                i <= line_len;
+                ++i, 
+                cur_x += x_diff,
+                cur_y += y_diff)
+        {
+            /* sea_floor->mat[row][col]++; */
+            sea_floor->mat[cur_y][cur_x]++;
         }
     }
 }
