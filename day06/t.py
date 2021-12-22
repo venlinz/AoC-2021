@@ -1,3 +1,5 @@
+# slower solution
+
 INPUT = "3,4,3,1,2"
 
 with open("input.txt") as file:
