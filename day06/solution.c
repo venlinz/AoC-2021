@@ -1,6 +1,6 @@
 /* 
  * faster solution
- * /
+ */
 #include <stdio.h>
 
 #define NO_DAYS 256
