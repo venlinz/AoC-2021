@@ -34,33 +34,27 @@ int main(void)
         fishes_days[input[i]]++;
     }
 
-    printf("init fishes_days: \n");
-    print_fish(fishes_days);
 
     size_t counter = 0;
     for (size_t i = 0; i < NO_DAYS; ++i, counter++)
     {
         long fishes_days0 = fishes_days[0];
-        fishes_days[0] -= fishes_days0;
+        fishes_days[0] = 0;
         for (size_t j = 1; j < MAX_HATCH_DELAY + 1; ++j)
         {
-            long fishes_day_cur = fishes_days[j];
-            fishes_days[j - 1] += fishes_day_cur;;
-            fishes_days[j] -= fishes_day_cur;
+            fishes_days[j - 1] += fishes_days[j];
+            fishes_days[j] = 0;
         }
         fishes_days[6] += fishes_days0;
         fishes_days[8] += fishes_days0;
     }
 
-    printf("counter: %ld\n", counter);
-    printf("\noutput: \n");
-    print_fish(fishes_days);
     long sum = 0;
     for (int i = 0; i < 9; i++)
     {
         sum += fishes_days[i];
     }
-    printf("\nanswer: %ld\n", sum);
+    printf("answer: %ld\n", sum);
     return 0;
 }
 
