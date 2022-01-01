@@ -18,12 +18,16 @@
 
 #define SUM_A_TO_G 700
 
+char * get_digit(char *digits, int idx);
+char * decode_segments(char *digits);
+
+char * str_subract(char *str, char *sub);
 char * stripspace(char *str);
 char select_non_match_char(char *str, char *magnet);
-char * find_output_value(char *digits);
+double calculate(const struct rusage *b, const struct rusage *a);
+
 void part1();
 void part2();
-double calculate(const struct rusage *b, const struct rusage *a);
 
 
 int main(void)
@@ -47,9 +51,6 @@ void part2(void)
         exit(EXIT_FAILURE);
     }
 
-    size_t count_of_digits = 0;
-    (void) count_of_digits;
-
     size_t limit = 150;
     char *lineptr = malloc(limit);
     if (!lineptr)
@@ -59,7 +60,6 @@ void part2(void)
     }
 
     char digits[10][8] = {0};
-    int count = 0;
     long sum = 0;
     while ((getline(&lineptr, &limit, fp) > 0))
     {
@@ -71,17 +71,15 @@ void part2(void)
             strcpy(digits[idx], pat);
             pat = strtok(NULL, " ");
         }
-        count++;
-        char * segment_code = find_output_value((char *)digits);
+        char * segment_code = decode_segments((char *)digits);
         strtok(line_cpy, "|");
         char *outputs = strtok(NULL, "|");
-        char *output = strtok(outputs, " ");
         char val_str[5] = {0};
         size_t idx = 0;
+        char *output = strtok(outputs, " ");
         while (output)
         {
             size_t output_len = strlen(stripspace(output));
-            /* printf("len: %lu\n", output_len); */
             switch(output_len)
             {
                 case 2: 
@@ -137,10 +135,8 @@ void part2(void)
             idx++;
             output = strtok(NULL, " ");
         }
-        /* printf("val_str: %s\n", val_str); */
         sum += atoi(val_str);
 
-        /* printf("tok: %s\n", tok); */
         free(segment_code);
         free(line_cpy);
     }
@@ -151,17 +147,15 @@ void part2(void)
 }
 
 
-// parse this input tommorow
-char * find_output_value(char *str_stream)
+char * decode_segments(char *digits)
 {
     char one[3] = "";
     char four[5] = "";
     char six[7] = "";
     char seven[4] = "";
-    (void) four;
     for (int i = 0; i < 10; i++)
     {
-        char *digit = (char *)(str_stream + 8 * i);
+        char *digit = get_digit(digits, i);
         size_t digit_i_len = strlen(digit);
         if (digit_i_len == 2)
             strcpy(one, digit);
@@ -170,28 +164,22 @@ char * find_output_value(char *str_stream)
         else if (digit_i_len == 4)
             strcpy(four, digit);
     }
-    /* printf("one: %s\n", one); */
-    /* printf("four: %s\n", four); */
-    /* printf("seven: %s\n", seven); */
     char *segments = malloc(8);
-    memset(segments, ' ', 8);
+    if (!segments)
+    {
+        fprintf(stderr, "Error: malloc");
+        exit(EXIT_FAILURE);
+    }
+    for (size_t i = 0; i < 7; i++)
+        segments[i] = ' ';
     segments[7] = '\0';
+
     segments[0] = select_non_match_char(seven, one);
 
-    char *four_minus_one = malloc(5);
-    memset(four_minus_one, 0, 5);
-    char *delim = one;
-    char *four_cpy = strdup(four);
-    char *tok = strtok(four_cpy, delim);
-    while (tok)
-    {
-        four_minus_one = strcat(four_minus_one, tok);
-        tok = strtok(NULL, delim);
-    }
-    free(four_cpy);
+    char *four_minus_one = str_subract(four, one);
     for (size_t i = 0; i < 10; ++i)
     {
-        char *digit = (char *)(str_stream + 8 * i);
+        char *digit = (char *)(digits + 8 * i);
         size_t digit_i_len = strlen(digit);
         if (digit_i_len == 5)
         {
@@ -233,7 +221,7 @@ char * find_output_value(char *str_stream)
     }
     for (size_t i = 0; i < 10; ++i)
     {
-        char *digit = (char *)(str_stream + 8 * i);
+        char *digit = (char *)(digits + 8 * i);
         size_t digit_i_len = strlen(digit);
 
         char *s1 = strchr(digit, four_minus_one[0]);
@@ -242,17 +230,8 @@ char * find_output_value(char *str_stream)
         {
             if ((bool) s1 && (bool) s3)
             {
-                char *five_minus_found_segs = malloc(5);
-                memset(five_minus_found_segs, 0, 5);
-                char *digit_cpy = strdup(digit);
-                char *tok = strtok(digit_cpy, segments);
-                while (tok)
-                {
-                    five_minus_found_segs = strcat(five_minus_found_segs, tok);
-                    tok = strtok(NULL, segments);
-                }
-                free(digit_cpy);
-                segments[6] = *five_minus_found_segs;
+                char *five_minus_found_segs = str_subract(digit, segments);
+                segments[6] = five_minus_found_segs[0];
                 free(five_minus_found_segs);
             }
         }
@@ -373,4 +352,38 @@ double calculate(const struct rusage *b, const struct rusage *a)
                   (b->ru_stime.tv_sec * 1000000 + b->ru_stime.tv_usec)))
                 / 1000000.0);
     }
+}
+
+
+// returns the segment sequence at index idx. This is a bit of a hack.
+// this is propreitary to this problem, I can generalize it.
+char * get_digit(char *digits, int idx)
+{
+    if (digits == NULL)
+    {
+        fprintf(stderr, "%s: %s\n", __func__, strerror(EINVAL));
+        exit(EXIT_FAILURE);
+    }
+    return (digits + 8 * idx);
+}
+
+
+char * str_subract(char *str, char *sub)
+{
+    size_t str_len = strlen(str);
+    char *result = malloc(str_len);
+    memset(result, 0, str_len);
+    if (!result)
+    {
+        fprintf(stderr, "Error: malloc");
+        exit(EXIT_FAILURE);
+    }
+
+    char *tok = strtok(str, sub);
+    while (tok)
+    {
+        result = strcat(result, tok);
+        tok = strtok(NULL, sub);
+    }
+    return result;
 }
