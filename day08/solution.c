@@ -71,9 +71,11 @@ void part2(void)
             strcpy(digits[idx], pat);
             pat = strtok(NULL, " ");
         }
+
         char * segment_code = decode_segments((char *)digits);
         strtok(line_cpy, "|");
         char *outputs = strtok(NULL, "|");
+
         char val_str[5] = {0};
         size_t idx = 0;
         char *output = strtok(outputs, " ");
@@ -94,8 +96,15 @@ void part2(void)
                 case 7:
                     val_str[idx] = '8';
                     break;
-                case 5:
+                case 5: // either 2, 3, 5
                     {
+                        /* has segments for 2 SSR(Seven Segment Representation).
+                         *    ****
+                         *       x 2
+                         *    ****
+                         *    x    5
+                         *    ****
+                         */
                         bool ssr_2 = (bool) strchr(output, segment_code[2]) 
                             & (bool) strchr(output, segment_code[4]); 
                         if (ssr_2)
@@ -103,6 +112,13 @@ void part2(void)
                             val_str[idx] = '2';
                             break;
                         }
+                        /* has segments for 3 SSR(Seven Segment Representation).
+                         *    ****
+                         *       x 2
+                         *    ****
+                         *       x 5
+                         *    ****
+                         */
                         bool ssr_3 = (bool) strchr(output, segment_code[2]) 
                             & (bool) strchr(output, segment_code[5]); 
                         if (ssr_3)
@@ -110,24 +126,57 @@ void part2(void)
                             val_str[idx] = '3';
                             break;
                         }
+
+                        /* has segments for 5 SSR(Seven Segment Representation).
+                         *    ****
+                         *    x    2
+                         *    ****
+                         *       x 5
+                         *    ****
+                         */
+                        // above both are false, this should be 5.
                         val_str[idx] = '5';
                         break;
                     }
-                case 6:
+                case 6: // either 0, 6, 9
                     {
-                        // ssr 0
-                        if (!strchr(output, segment_code[3]))
+                        /* has segments for 0 SSR(Seven Segment Representation).
+                         * Here I check for absence of third segment.
+                         *    ****
+                         *    *3 * 
+                         *    ----
+                         *    *  *
+                         *    ****
+                         */
+                        if (strchr(output, segment_code[3]) == NULL)
                         {
                             val_str[idx] = '0';
                             break;
                         }
-                        // ssr 6
-                        if (!strchr(output, segment_code[2]))
+
+                        /* has segments for 6 SSR(Seven Segment Representation).
+                         * Here I check for absence of second segment.
+                         *    ****
+                         *    *  - 2 
+                         *    ****
+                         *    *  *
+                         *    ****
+                         */
+                        if (strchr(output, segment_code[2]) == NULL)
                         {
                             val_str[idx] = '6';
                             break;
                         }
-                        // ssr 9
+
+                        /* has segments for 9 SSR(Seven Segment Representation).
+                         * This is implicit, if the above are not true, 
+                         * the number is 9.
+                         *    ****
+                         *    *  *
+                         *    ****
+                         *  4 -  *
+                         *    ****
+                         */
                         val_str[idx] = '9';
                         break;
                     }
@@ -137,8 +186,8 @@ void part2(void)
         }
         sum += atoi(val_str);
 
-        free(segment_code);
         free(line_cpy);
+        free(segment_code);
     }
     printf("part2: %ld\n", sum);
 
@@ -147,6 +196,18 @@ void part2(void)
 }
 
 
+/* Decode(deduce) the unique patterns into map,
+ * where the mismatched characters ordered to
+ * correct positions from 0 to 6 inclusive.
+ * note: middle one is 3.
+ *       0
+ *     ****
+ *   1 * 3* 2
+ *     ****
+ *   4 *  * 5
+ *     ****
+ *      6
+ */
 char * decode_segments(char *digits)
 {
     char one[3] = "";
@@ -164,6 +225,7 @@ char * decode_segments(char *digits)
         else if (digit_i_len == 4)
             strcpy(four, digit);
     }
+
     char *segments = malloc(8);
     if (!segments)
     {
@@ -179,7 +241,7 @@ char * decode_segments(char *digits)
     char *four_minus_one = str_subract(four, one);
     for (size_t i = 0; i < 10; ++i)
     {
-        char *digit = (char *)(digits + 8 * i);
+        char *digit = get_digit(digits, i);
         size_t digit_i_len = strlen(digit);
         if (digit_i_len == 5)
         {
@@ -219,9 +281,10 @@ char * decode_segments(char *digits)
         segments[5] = one[1];
         segments[2] = one[0];
     }
+
     for (size_t i = 0; i < 10; ++i)
     {
-        char *digit = (char *)(digits + 8 * i);
+        char *digit = get_digit(digits, i);
         size_t digit_i_len = strlen(digit);
 
         char *s1 = strchr(digit, four_minus_one[0]);
@@ -238,6 +301,7 @@ char * decode_segments(char *digits)
     }
     free(four_minus_one);
 
+    // Finding the last element.
     int sum = SUM_A_TO_G;
     for (size_t i = 0; i < 7; i++)
     {
