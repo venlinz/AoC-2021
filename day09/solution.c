@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <assert.h>
+#include <errno.h>
 
 /* #define SAMPLE */
 #ifdef SAMPLE
@@ -15,14 +17,72 @@
 #define COL 100
 #endif
 
-int char_to_digit(char c);
+#define DIRS_CAP 4
 
+size_t DIRS[DIRS_CAP][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+
+
+void part1(void);
+void part1_elegant(void);
+void populate_data(void);
+bool islow(const size_t x, const size_t y);
+
+
+int char_to_digit(char c);
 int a[ROW][COL] = {0};
+int v[ROW][COL] = {0};
 
 
 int main(void)
 {
+    populate_data();
+    part1_elegant();
+    return 0;
+}
+
+
+void part1_elegant()
+{
+    size_t count = 0;
+    for (size_t x = 0; x < ROW; x++)
+    {
+        for (size_t y = 0; y < COL; y++)
+        {
+            count += islow(x, y) ? a[x][y] + 1 : 0;
+        }
+    }
+    printf("count: %lu\n", count);
+}
+
+
+bool islow(const size_t x, const size_t y)
+{
+    for (size_t i = 0; i < DIRS_CAP; i++)
+    {
+        int newX = x + DIRS[i][0];
+        int newY = y + DIRS[i][1];
+        if (newX <= -1 || newX > ROW - 1)
+            continue;
+        if (newY <= -1 || newY > COL - 1)
+            continue;
+        if (a[x][y] >= a[newX][newY])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+void populate_data(void)
+{
     FILE *fp = fopen(FILENAME, "r");
+    if (!fp)
+    {
+        fprintf(stderr, "Could not open the file %s: %s\n", FILENAME
+                , strerror(errno));
+        exit(1);
+    }
 
     size_t limit = COL + 2;
     char *lineptr = malloc(limit);
@@ -36,7 +96,12 @@ int main(void)
         row++;
     }
     free(lineptr);
+    fclose(fp);
+}
 
+
+void part1(void)
+{
     size_t sum = 0;
     for (size_t i = 0; i < ROW; i++)
     {
@@ -111,9 +176,6 @@ int main(void)
         }
     }
     printf("ans: %lu\n", sum);
-
-    fclose(fp);
-    return 0;
 }
 
 
